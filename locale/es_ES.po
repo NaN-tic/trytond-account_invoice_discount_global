@@ -1,0 +1,29 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:account.invoice:"
+msgid "Invoice \"%s\" has a discount but no discount product is configured."
+msgstr ""
+"La factura \"%s\" tiene descuento pero no hay ningún producto configurado "
+"como descuento."
+
+msgctxt "field:account.configuration,discount_product:"
+msgid "Discount Product"
+msgstr "Producto de descuento"
+
+msgctxt "field:account.invoice,invoice_discount:"
+msgid "Invoice Discount"
+msgstr "Descuento en factura"
+
+msgctxt "field:party.party,invoice_discount:"
+msgid "Invoice Discount"
+msgstr "Descuento en factura"
+
+msgctxt "view:account.invoice:"
+msgid "%"
+msgstr "%"
+
+msgctxt "view:party.party:"
+msgid "%"
+msgstr "%"

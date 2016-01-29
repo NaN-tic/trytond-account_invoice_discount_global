@@ -1,0 +1,9 @@
+<data>
+    <xpath expr="/form/notebook/page[@id='invoice']/field[@name='currency']" position="after">
+        <label name="invoice_discount"/>
+        <group id="discount" col="2" xexpand="0">
+            <field name="invoice_discount" factor="100" xalign="1.0" xexpand="0"/>
+            <label name="invoice_discount" string="%" xalign="0.0" xexpand="1" xfill="1"/>
+        </group>
+    </xpath>
+</data>
