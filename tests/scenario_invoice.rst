@@ -19,7 +19,7 @@ Install account_invoice::
 
     >>> Module = Model.get('ir.module.module')
     >>> account_invoice_module, = Module.find(
-    ...     [('name', '=', 'account_invoice')])
+    ...     [('name', '=', 'account_invoice_discount_global')])
     >>> Module.install([account_invoice_module.id], config.context)
     >>> Wizard('ir.module.module.install_upgrade').execute('upgrade')
 
@@ -237,4 +237,4 @@ Create invoice::
     >>> invoice.tax_amount
     Decimal('20.00')
     >>> invoice.total_amount
-    Decimal('240.00')
+    Decimal('218.00')
