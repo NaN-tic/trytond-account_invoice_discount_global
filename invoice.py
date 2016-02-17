@@ -94,17 +94,10 @@ class Invoice:
                     lines.remove(line)
                     to_delete.append(line)
             invoice.lines = lines
-        
+
         Line.delete(to_delete)
         for invoice in invoices:
             invoice.save()
-
-    @classmethod
-    @ModelView.button
-    @Workflow.transition('validated')
-    def validate_invoice(cls, invoices):
-        cls.compute_discount(invoices)
-        super(Invoice, cls).validate_invoice(invoices)
 
     @classmethod
     @ModelView.button
