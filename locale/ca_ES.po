@@ -1,8 +1,7 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-#, fuzzy
 msgctxt "error:account.invoice:"
 msgid "Invoice \"%s\" has a discount but no discount product is configured."
 msgstr ""
@@ -17,9 +16,13 @@ msgctxt "field:account.invoice,invoice_discount:"
 msgid "Invoice Discount"
 msgstr "Descompte en factura"
 
-msgctxt "field:party.party,invoice_discount:"
-msgid "Invoice Discount"
-msgstr "Descompte en factura"
+msgctxt "field:party.party,customer_invoice_discount:"
+msgid "Customer Invoice Discount"
+msgstr "Descompte en factura de client"
+
+msgctxt "field:party.party,supplier_invoice_discount:"
+msgid "Supplier Invoice Discount"
+msgstr "Descompte en factura de proveïdor"
 
 msgctxt "view:account.invoice:"
 msgid "%"
@@ -28,3 +31,7 @@ msgstr "%"
 msgctxt "view:party.party:"
 msgid "%"
 msgstr "%"
+
+msgctxt "view:party.party:"
+msgid "Invoice Discount"
+msgstr "Descompte en factura"

@@ -1,10 +1,13 @@
+# The COPYRIGHT file at the top level of this repository contains the full
+# copyright notices and license terms.
 from decimal import Decimal
+
+from trytond.config import config
 from trytond.model import ModelView, Workflow, fields
 from trytond.pool import PoolMeta, Pool
-from trytond.config import config
 from trytond.pyson import Eval
 
-__all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale']
+__all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale', 'Purchase']
 
 DISCOUNT_DIGITS = int(config.get('digits', 'discount_digits', 4))
 
@@ -36,10 +39,13 @@ class Invoice:
     def default_invoice_discount():
         return Decimal(0)
 
-    @fields.depends('party')
+    @fields.depends('party', 'type')
     def on_change_with_invoice_discount(self):
         if self.party:
-            return self.party.invoice_discount
+            if self.type in ('in_invoice', 'in_credit_note'):
+                return self.party.supplier_invoice_discount
+            else:
+                return self.party.customer_invoice_discount
 
     @classmethod
     @ModelView.button
@@ -47,35 +53,39 @@ class Invoice:
         pool = Pool()
         Line = pool.get('account.invoice.line')
         Config = Pool().get('account.configuration')
+
         config = Config(1)
         product = config.discount_product
         lines = []
         for invoice in invoices:
             if not invoice.invoice_discount:
                 continue
-            lines.extend(invoice._get_discount_line(invoice, product))
+            lines.extend(invoice._get_discount_line(product))
         if lines:
             Line.create([x._save_values for x in lines])
         cls.update_taxes(invoices)
 
-    def _get_discount_line(self, invoice, product):
+    def _get_discount_line(self, product):
         Line = Pool().get('account.invoice.line')
-        amount = -1 * invoice.untaxed_amount * invoice.invoice_discount
+        amount = -1 * self.untaxed_amount * self.invoice_discount
         lines = []
-        if amount and invoice.lines:
+        if amount and self.lines:
             if not product:
                 self.raise_user_error('missing_discount_product',
-                    invoice.rec_name)
+                    self.rec_name)
             line = Line()
             line.invoice = self
             line.type = 'line'
             line.product = product
-            line.account = product.account_revenue_used
+            if self.type in ('in_invoice', 'in_credit_note'):
+                line.account = product.account_expense_used
+            else:
+                line.account = product.account_revenue_used
             line.description = product.rec_name
             line.quantity = 1
             line.unit = product.default_uom
             line.unit_price = amount
-            line._update_taxes()
+            line._update_taxes(self.type, self.party)
             lines.append(line)
         return lines
 
@@ -125,23 +135,36 @@ class InvoiceLine:
     __name__ = 'account.invoice.line'
     __metaclass__ = PoolMeta
 
-    def _update_taxes(self):
+    def _update_taxes(self, invoice_type, party):
         Tax = Pool().get('account.tax')
         taxes = []
-        party = self.invoice.party
         pattern = self._get_tax_rule_pattern()
-        for tax in self.product.customer_taxes_used:
-            if party.customer_tax_rule:
-                tax_ids = party.customer_tax_rule.apply(tax, pattern)
+        if invoice_type in ('in_invoice', 'in_credit_note'):
+            for tax in self.product.supplier_taxes_used:
+                if party.supplier_tax_rule:
+                    tax_ids = party.supplier_tax_rule.apply(tax, pattern)
+                    if tax_ids:
+                        taxes.extend(tax_ids)
+                    continue
+                taxes.append(tax.id)
+            if party.supplier_tax_rule:
+                tax_ids = party.supplier_tax_rule.apply(None, pattern)
                 if tax_ids:
                     taxes.extend(tax_ids)
-                continue
-            taxes.append(tax.id)
-        if party.customer_tax_rule:
-            tax_ids = party.customer_tax_rule.apply(None, pattern)
-            if tax_ids:
-                taxes.extend(tax_ids)
-        self.taxes = Tax.browse(taxes)
+        else:
+            for tax in self.product.customer_taxes_used:
+                if party.customer_tax_rule:
+                    tax_ids = party.customer_tax_rule.apply(tax, pattern)
+                    if tax_ids:
+                        taxes.extend(tax_ids)
+                    continue
+                taxes.append(tax.id)
+            if party.customer_tax_rule:
+                tax_ids = party.customer_tax_rule.apply(None, pattern)
+                if tax_ids:
+                    taxes.extend(tax_ids)
+        if taxes:
+            self.taxes = Tax.browse(taxes)
 
 
 class Sale:
@@ -151,5 +174,18 @@ class Sale:
     def _get_invoice_sale(self, invoice_type):
         invoice = super(Sale, self)._get_invoice_sale(invoice_type)
         if invoice:
-            invoice.invoice_discount = invoice.on_change_with_invoice_discount()
+            invoice.invoice_discount = (
+                invoice.on_change_with_invoice_discount())
+        return invoice
+
+
+class Purchase:
+    __name__ = 'purchase.purchase'
+    __metaclass__ = PoolMeta
+
+    def _get_invoice_purchase(self, invoice_type):
+        invoice = super(Purchase, self)._get_invoice_purchase(invoice_type)
+        if invoice:
+            invoice.invoice_discount = (
+                invoice.on_change_with_invoice_discount())
         return invoice
