@@ -4,11 +4,13 @@ from trytond.pool import Pool
 from .invoice import *
 from .party import *
 
+
 def register():
     Pool.register(
         Party,
         Configuration,
         Invoice,
         InvoiceLine,
+        Purchase,
         Sale,
         module='account_invoice_discount_global', type_='model')
