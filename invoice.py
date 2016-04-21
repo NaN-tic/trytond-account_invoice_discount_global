@@ -24,7 +24,6 @@ class Invoice:
     invoice_discount = fields.Numeric('Invoice Discount',
         digits=(16, DISCOUNT_DIGITS), states={
             'readonly': Eval('state') != 'draft',
-            'invisible': Eval('type').in_(['in_invoice', 'in_credit_note']),
             }, depends=['state'])
 
     @classmethod
