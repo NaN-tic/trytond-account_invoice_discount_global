@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -16,9 +16,13 @@ msgctxt "field:account.invoice,invoice_discount:"
 msgid "Invoice Discount"
 msgstr "Descuento en factura"
 
-msgctxt "field:party.party,invoice_discount:"
-msgid "Invoice Discount"
-msgstr "Descuento en factura"
+msgctxt "field:party.party,customer_invoice_discount:"
+msgid "Customer Invoice Discount"
+msgstr "Descuento en factura de cliente"
+
+msgctxt "field:party.party,supplier_invoice_discount:"
+msgid "Supplier Invoice Discount"
+msgstr "Descuento en factura de proveedor"
 
 msgctxt "view:account.invoice:"
 msgid "%"
@@ -27,3 +31,7 @@ msgstr "%"
 msgctxt "view:party.party:"
 msgid "%"
 msgstr "%"
+
+msgctxt "view:party.party:"
+msgid "Invoice Discount"
+msgstr "Descuento en factura"

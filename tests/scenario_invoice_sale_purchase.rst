@@ -1,6 +1,6 @@
-================================
-Invoice Discount Global Scenario
-================================
+=======================================================
+Invoice Discount Global from Sale and Purchase Scenario
+=======================================================
 
 Imports::
 
@@ -16,12 +16,18 @@ Create database::
     >>> config = config.set_trytond()
     >>> config.pool.test = True
 
-Install account_invoice_discount_global::
+Install account_invoice_discount_global, sale and purchase::
 
     >>> Module = Model.get('ir.module.module')
     >>> account_invoice_module, = Module.find(
     ...     [('name', '=', 'account_invoice_discount_global')])
-    >>> Module.install([account_invoice_module.id], config.context)
+    >>> sale_module, = Module.find([('name', '=', 'sale')])
+    >>> purchase_module, = Module.find([('name', '=', 'purchase')])
+    >>> Module.install([
+    ...         account_invoice_module.id,
+    ...         sale_module.id,
+    ...         purchase_module.id,
+    ...         ], config.context)
     >>> Wizard('ir.module.module.install_upgrade').execute('upgrade')
 
 Create company::
@@ -30,9 +36,9 @@ Create company::
     >>> CurrencyRate = Model.get('currency.currency.rate')
     >>> currencies = Currency.find([('code', '=', 'USD')])
     >>> if not currencies:
-    ...     currency = Currency(name='US Dollar', symbol=u'$', code='USD',
-    ...         rounding=Decimal('0.01'), mon_grouping='[]',
-    ...         mon_decimal_point='.')
+    ...     currency = Currency(name='U.S. Dollar', symbol='$', code='USD',
+    ...         rounding=Decimal('0.01'), mon_grouping='[3, 3, 0]',
+    ...         mon_decimal_point='.', mon_thousands_sep=',')
     ...     currency.save()
     ...     CurrencyRate(date=today + relativedelta(month=1, day=1),
     ...         rate=Decimal('1.0'), currency=currency).save()
@@ -53,7 +59,38 @@ Create company::
 Reload the context::
 
     >>> User = Model.get('res.user')
+    >>> Group = Model.get('res.group')
     >>> config._context = User.get_preferences(True, config.context)
+
+Create sale user::
+
+    >>> sale_user = User()
+    >>> sale_user.name = 'Sale'
+    >>> sale_user.login = 'sale'
+    >>> sale_user.main_company = company
+    >>> sale_group, = Group.find([('name', '=', 'Sales')])
+    >>> sale_user.groups.append(sale_group)
+    >>> sale_user.save()
+
+Create stock user::
+
+    >>> stock_user = User()
+    >>> stock_user.name = 'Stock'
+    >>> stock_user.login = 'stock'
+    >>> stock_user.main_company = company
+    >>> stock_group, = Group.find([('name', '=', 'Stock')])
+    >>> stock_user.groups.append(stock_group)
+    >>> stock_user.save()
+
+Create account user::
+
+    >>> account_user = User()
+    >>> account_user.name = 'Account'
+    >>> account_user.login = 'account'
+    >>> account_user.main_company = company
+    >>> account_group, = Group.find([('name', '=', 'Account')])
+    >>> account_user.groups.append(account_group)
+    >>> account_user.save()
 
 Create fiscal year::
 
@@ -82,6 +119,7 @@ Create chart of accounts::
 
     >>> AccountTemplate = Model.get('account.account.template')
     >>> Account = Model.get('account.account')
+    >>> Journal = Model.get('account.journal')
     >>> account_template, = AccountTemplate.find([('parent', '=', None)])
     >>> create_chart = Wizard('account.create_chart')
     >>> create_chart.execute('account')
@@ -138,13 +176,15 @@ Create tax::
     >>> tax.credit_note_tax_code = credit_note_tax_code
     >>> tax.save()
 
-Create party with customer invoice discount of 5% and supplier discount of 3%::
+Create parties::
 
     >>> Party = Model.get('party.party')
-    >>> party = Party(name='Party')
-    >>> party.customer_invoice_discount = Decimal('0.05')
-    >>> party.supplier_invoice_discount = Decimal('0.03')
-    >>> party.save()
+    >>> supplier = Party(name='Supplier')
+    >>> supplier.supplier_invoice_discount = Decimal('0.03')
+    >>> supplier.save()
+    >>> customer = Party(name='Customer')
+    >>> customer.customer_invoice_discount = Decimal('0.05')
+    >>> customer.save()
 
 Create product::
 
@@ -155,6 +195,8 @@ Create product::
     >>> template.name = 'product'
     >>> template.default_uom = unit
     >>> template.type = 'service'
+    >>> template.purchasable = True
+    >>> template.salable = True
     >>> template.list_price = Decimal('40')
     >>> template.cost_price = Decimal('25')
     >>> template.account_expense = expense
@@ -188,114 +230,115 @@ Create payment term::
 
     >>> PaymentTerm = Model.get('account.invoice.payment_term')
     >>> PaymentTermLine = Model.get('account.invoice.payment_term.line')
-    >>> payment_term = PaymentTerm(name='Term')
-    >>> payment_term_line = PaymentTermLine(type='percent', days=20,
-    ...     percentage=Decimal(50))
-    >>> payment_term.lines.append(payment_term_line)
-    >>> payment_term_line = PaymentTermLine(type='remainder', days=40)
+    >>> payment_term = PaymentTerm(name='Direct')
+    >>> payment_term_line = PaymentTermLine(type='remainder', days=0)
     >>> payment_term.lines.append(payment_term_line)
     >>> payment_term.save()
 
-Create customer invoice::
+Sale 5 services::
 
-    >>> Invoice = Model.get('account.invoice')
-    >>> InvoiceLine = Model.get('account.invoice.line')
-    >>> invoice = Invoice()
-    >>> invoice.party = party
-    >>> invoice.payment_term = payment_term
-    >>> invoice.invoice_date = today
-    >>> line = InvoiceLine()
-    >>> invoice.lines.append(line)
-    >>> line.product = product
-    >>> line.quantity = 5
-    >>> line = InvoiceLine()
-    >>> invoice.lines.append(line)
-    >>> line.account = revenue
-    >>> line.description = 'Test'
-    >>> line.quantity = 1
-    >>> line.unit_price = Decimal(20)
-    >>> invoice.untaxed_amount
-    Decimal('220.00')
-    >>> invoice.tax_amount
+    >>> Sale = Model.get('sale.sale')
+    >>> SaleLine = Model.get('sale.line')
+    >>> sale = Sale()
+    >>> sale.party = customer
+    >>> sale.payment_term = payment_term
+    >>> sale.invoice_method = 'order'
+    >>> sale_line = SaleLine()
+    >>> sale.lines.append(sale_line)
+    >>> sale_line.product = product
+    >>> sale_line.quantity = 5.0
+    >>> sale.save()
+    >>> Sale.quote([sale.id], config.context)
+    >>> Sale.confirm([sale.id], config.context)
+    >>> Sale.process([sale.id], config.context)
+    >>> sale.state
+    u'processing'
+    >>> sale.reload()
+    >>> sale.untaxed_amount
+    Decimal('200.00')
+    >>> sale.tax_amount
     Decimal('20.00')
-    >>> invoice.total_amount
-    Decimal('240.00')
-    >>> invoice.save()
+    >>> sale.total_amount
+    Decimal('220.00')
+    >>> len(sale.shipments), len(sale.shipment_returns), len(sale.invoices)
+    (0, 0, 1)
+    >>> invoice, = sale.invoices
+    >>> invoice.origins == sale.rec_name
+    True
 
-Check invoice discount is parties customer invoice discount::
+Created invoice has customer's invoice discount::
 
     >>> invoice.invoice_discount
     Decimal('0.05')
 
-Change invoice discount::
-
-    >>> invoice.invoice_discount = Decimal('0.1')
-    >>> invoice.untaxed_amount
-    Decimal('220.00')
-    >>> invoice.save()
-
 Post invoice and check discount is applied::
 
-    >>> Invoice.post([invoice.id], config.context)
+    >>> Invoice = Model.get('account.invoice')
+    >>> Invoice.post([i.id for i in sale.invoices], config.context)
     >>> invoice.reload()
-    >>> invoice.state
-    u'posted'
-    >>> invoice.invoice_discount
-    Decimal('0.1')
     >>> discount_line, = [l for l in invoice.lines
     ...     if l.product == discount_product]
     >>> discount_line.quantity
     1.0
     >>> discount_line.amount
-    Decimal('-22.00')
+    Decimal('-10.00')
     >>> invoice.untaxed_amount
-    Decimal('198.00')
+    Decimal('190.00')
     >>> invoice.tax_amount
     Decimal('20.00')
     >>> invoice.total_amount
-    Decimal('218.00')
+    Decimal('210.00')
 
-Create supplier invoice::
+Purchase 3 services::
 
-    >>> invoice = Invoice()
-    >>> invoice.type = 'in_invoice'
-    >>> invoice.party = party
-    >>> invoice.payment_term = payment_term
-    >>> invoice.invoice_date = today
-    >>> line = InvoiceLine()
-    >>> invoice.lines.append(line)
-    >>> line.product = product
-    >>> line.quantity = 10
-    >>> invoice.untaxed_amount
-    Decimal('250.00')
-    >>> invoice.tax_amount
-    Decimal('25.00')
-    >>> invoice.total_amount
-    Decimal('275.00')
-    >>> invoice.save()
+    >>> Purchase = Model.get('purchase.purchase')
+    >>> PurchaseLine = Model.get('purchase.line')
+    >>> purchase = Purchase()
+    >>> purchase.party = supplier
+    >>> purchase.payment_term = payment_term
+    >>> purchase.invoice_method = 'order'
+    >>> purchase_line = PurchaseLine()
+    >>> purchase.lines.append(purchase_line)
+    >>> purchase_line.product = product
+    >>> purchase_line.quantity = 3.0
+    >>> purchase.click('quote')
+    >>> purchase.click('confirm')
+    >>> purchase.click('process')
+    >>> purchase.state
+    u'processing'
+    >>> purchase.reload()
+    >>> purchase.untaxed_amount
+    Decimal('75.00')
+    >>> purchase.tax_amount
+    Decimal('7.50')
+    >>> purchase.total_amount
+    Decimal('82.50')
+    >>> len(purchase.moves), len(purchase.shipment_returns), len(purchase.invoices)
+    (0, 0, 1)
+    >>> invoice, = purchase.invoices
+    >>> invoice.origins == purchase.rec_name
+    True
 
-Check invoice discount is parties supplier invoice discount::
+Created invoice has supplier's invoice discount::
 
     >>> invoice.invoice_discount
     Decimal('0.03')
 
 Post invoice and check discount is applied::
 
+    >>> invoice.invoice_date = today
+    >>> invoice.save()
     >>> Invoice.post([invoice.id], config.context)
     >>> invoice.reload()
-    >>> invoice.state
-    u'posted'
-    >>> invoice.invoice_discount
-    Decimal('0.03')
     >>> discount_line, = [l for l in invoice.lines
     ...     if l.product == discount_product]
     >>> discount_line.quantity
     1.0
     >>> discount_line.amount
-    Decimal('-7.50')
+    Decimal('-2.25')
     >>> invoice.untaxed_amount
-    Decimal('242.50')
+    Decimal('72.75')
     >>> invoice.tax_amount
-    Decimal('25.00')
+    Decimal('7.50')
     >>> invoice.total_amount
-    Decimal('267.50')
+    Decimal('80.25')
