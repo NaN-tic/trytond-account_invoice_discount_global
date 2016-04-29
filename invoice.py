@@ -41,7 +41,7 @@ class Invoice:
     @fields.depends('party', 'type')
     def on_change_with_invoice_discount(self):
         if self.party:
-            if self.type in ('in_invoice', 'in_credit_note'):
+            if self.type == 'in':
                 return self.party.supplier_invoice_discount
             else:
                 return self.party.customer_invoice_discount
@@ -76,7 +76,7 @@ class Invoice:
             line.invoice = self
             line.type = 'line'
             line.product = product
-            if self.type in ('in_invoice', 'in_credit_note'):
+            if self.type == 'in':
                 line.account = product.account_expense_used
             else:
                 line.account = product.account_revenue_used
@@ -145,7 +145,7 @@ class InvoiceLine:
         Tax = Pool().get('account.tax')
         taxes = []
         pattern = self._get_tax_rule_pattern()
-        if invoice_type in ('in_invoice', 'in_credit_note'):
+        if invoice_type == 'in':
             for tax in self.product.supplier_taxes_used:
                 if party.supplier_tax_rule:
                     tax_ids = party.supplier_tax_rule.apply(tax, pattern)
