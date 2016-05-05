@@ -43,6 +43,6 @@ class Party:
             cursor.execute(*table.select(table.id, table.invoice_discount,
                     where=table.invoice_discount != Null))
             for party_id, invoice_discount in cursor.fetchall():
-                Property.set('customer_invoice_discount', cls._name, party_id,
-                    invoice_discount)
+                Property.set('customer_invoice_discount', cls.__name__,
+                    [party_id], ',%s' % invoice_discount.to_eng_string())
             handler.drop_column('invoice_discount', exception=True)
