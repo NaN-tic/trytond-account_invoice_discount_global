@@ -34,8 +34,8 @@ class Party:
 
         super(Party, cls).__register__(module_name)
 
-        cursor = Transaction().cursor
-        handler = TableHandler(cursor, cls, module_name)
+        cursor = Transaction().connection.cursor()
+        handler = TableHandler(cls, module_name)
         table = cls.__table__()
         # Migration from 3.4.0: moved invoice_discount to property
         # customer_invoice_discount
