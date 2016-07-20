@@ -9,7 +9,7 @@ from trytond.pyson import Eval
 
 __all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale', 'Purchase']
 
-DISCOUNT_DIGITS = int(config.get('digits', 'discount_digits', 4))
+DISCOUNT_DIGITS = (16, config.getint('product', 'price_decimal', default=4))
 
 
 class Configuration:
@@ -22,7 +22,7 @@ class Invoice:
     __name__ = 'account.invoice'
     __metaclass__ = PoolMeta
     invoice_discount = fields.Numeric('Invoice Discount',
-        digits=(16, DISCOUNT_DIGITS), states={
+        digits=DISCOUNT_DIGITS, states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state'])
 

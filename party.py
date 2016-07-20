@@ -11,18 +11,18 @@ from trytond.transaction import Transaction
 
 __all__ = ['Party']
 
-DISCOUNT_DIGITS = int(config.get('digits', 'discount_digits', 4))
+DISCOUNT_DIGITS = (16, config.getint('product', 'price_decimal', default=4))
 
 
 class Party:
     __name__ = 'party.party'
     __metaclass__ = PoolMeta
     customer_invoice_discount = fields.Property(fields.Numeric(
-            'Customer Invoice Discount', digits=(16, DISCOUNT_DIGITS), states={
+            'Customer Invoice Discount', digits=DISCOUNT_DIGITS, states={
                 'invisible': ~Eval('context', {}).get('company'),
                 }))
     supplier_invoice_discount = fields.Property(fields.Numeric(
-            'Supplier Invoice Discount', digits=(16, DISCOUNT_DIGITS), states={
+            'Supplier Invoice Discount', digits=DISCOUNT_DIGITS, states={
                 'invisible': ~Eval('context', {}).get('company'),
                 }))
 
