@@ -177,8 +177,8 @@ class Sale:
     __name__ = 'sale.sale'
     __metaclass__ = PoolMeta
 
-    def _get_invoice_sale(self, invoice_type):
-        invoice = super(Sale, self)._get_invoice_sale(invoice_type)
+    def _get_invoice_sale(self):
+        invoice = super(Sale, self)._get_invoice_sale()
         if invoice:
             invoice.invoice_discount = (
                 invoice.on_change_with_invoice_discount())
@@ -189,8 +189,8 @@ class Purchase:
     __name__ = 'purchase.purchase'
     __metaclass__ = PoolMeta
 
-    def _get_invoice_purchase(self, invoice_type):
-        invoice = super(Purchase, self)._get_invoice_purchase(invoice_type)
+    def _get_invoice_purchase(self):
+        invoice = super(Purchase, self)._get_invoice_purchase()
         if invoice:
             invoice.invoice_discount = (
                 invoice.on_change_with_invoice_discount())
