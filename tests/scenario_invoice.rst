@@ -258,7 +258,7 @@ Post invoice and check discount is applied::
 Create supplier invoice::
 
     >>> invoice = Invoice()
-    >>> invoice.type = 'in_invoice'
+    >>> invoice.type = 'in'
     >>> invoice.party = party
     >>> invoice.payment_term = payment_term
     >>> invoice.invoice_date = today
