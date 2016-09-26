@@ -55,6 +55,8 @@ class Invoice:
 
         config = Config(1)
         product = config.discount_product
+        if not product:
+            return
         lines = []
         for invoice in invoices:
             if not invoice.invoice_discount:
