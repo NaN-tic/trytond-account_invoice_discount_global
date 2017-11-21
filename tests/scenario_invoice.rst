@@ -171,6 +171,26 @@ Post invoice and check discount is applied::
     >>> invoice.total_amount
     Decimal('218.00')
 
+Credit invoice with refund::
+
+    >>> credit = Wizard('account.invoice.credit', [invoice])
+    >>> credit.form.with_refund = True
+    >>> credit.execute('credit')
+    >>> invoice.reload()
+    >>> invoice.state
+    u'paid'
+    >>> credit_note, = Invoice.find([('untaxed_amount', '<', Decimal(0))])
+    >>> credit_note.untaxed_amount
+    Decimal('-198.00')
+
+Duplicate invoice::
+
+    >>> duplicate = invoice.duplicate()
+    >>> Invoice.post([duplicate.id], config.context)
+    >>> duplicate.reload()
+    >>> duplicate.untaxed_amount
+    Decimal('198.00')
+
 Create supplier invoice::
 
     >>> invoice = Invoice()
