@@ -94,6 +94,7 @@ class Invoice:
             line.quantity = 1
             line.unit = product.default_uom
             line.unit_price = amount
+            line.sequence = 9999
             line._update_taxes(self.type, self.party)
             return line
 
