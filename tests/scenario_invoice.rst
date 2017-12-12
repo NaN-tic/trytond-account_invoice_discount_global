@@ -5,10 +5,9 @@ Invoice Discount Global Scenario
 Imports::
 
     >>> import datetime
-    >>> from dateutil.relativedelta import relativedelta
     >>> from decimal import Decimal
-    >>> from operator import attrgetter
-    >>> from proteus import config, Model, Wizard
+    >>> from proteus import Model, Wizard
+    >>> from trytond.tests.tools import activate_modules
     >>> from trytond.modules.company.tests.tools import create_company, \
     ...     get_company
     >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
@@ -17,18 +16,9 @@ Imports::
     ...     set_fiscalyear_invoice_sequences, create_payment_term
     >>> today = datetime.date.today()
 
-Create database::
-
-    >>> config = config.set_trytond()
-    >>> config.pool.test = True
-
 Install account_invoice_discount_global::
 
-    >>> Module = Model.get('ir.module')
-    >>> account_invoice_module, = Module.find(
-    ...     [('name', '=', 'account_invoice_discount_global')])
-    >>> Module.install([account_invoice_module.id], config.context)
-    >>> Wizard('ir.module.install_upgrade').execute('upgrade')
+    >>> config = activate_modules('account_invoice_discount_global')
 
 Create company::
 
@@ -81,7 +71,6 @@ Create product::
     >>> template.default_uom = unit
     >>> template.type = 'service'
     >>> template.list_price = Decimal('40')
-    >>> template.cost_price = Decimal('25')
     >>> template.account_expense = expense
     >>> template.account_revenue = revenue
     >>> template.customer_taxes.append(tax)
@@ -152,8 +141,7 @@ Change invoice discount::
 
 Post invoice and check discount is applied::
 
-    >>> Invoice.post([invoice.id], config.context)
-    >>> invoice.reload()
+    >>> invoice.click('post')
     >>> invoice.state
     u'posted'
     >>> invoice.invoice_discount
@@ -176,7 +164,6 @@ Credit invoice with refund::
     >>> credit = Wizard('account.invoice.credit', [invoice])
     >>> credit.form.with_refund = True
     >>> credit.execute('credit')
-    >>> invoice.reload()
     >>> invoice.state
     u'paid'
     >>> credit_note, = Invoice.find([('untaxed_amount', '<', Decimal(0))])
@@ -185,9 +172,8 @@ Credit invoice with refund::
 
 Duplicate invoice::
 
-    >>> duplicate = invoice.duplicate()
-    >>> Invoice.post([duplicate.id], config.context)
-    >>> duplicate.reload()
+    >>> duplicate, = invoice.duplicate()
+    >>> duplicate.click('post')
     >>> duplicate.untaxed_amount
     Decimal('198.00')
 
@@ -217,8 +203,7 @@ Check invoice discount is parties supplier invoice discount::
 
 Post invoice and check discount is applied::
 
-    >>> Invoice.post([invoice.id], config.context)
-    >>> invoice.reload()
+    >>> invoice.click('post')
     >>> invoice.state
     u'posted'
     >>> invoice.invoice_discount

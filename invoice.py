@@ -53,24 +53,20 @@ class Invoice:
         Line = pool.get('account.invoice.line')
         Config = Pool().get('account.configuration')
 
-        config = Config(1)
-        product = config.discount_product
-        if not product:
-            return
+        product = Config(1).discount_product
+        cls.remove_discount(invoices)
         lines = []
         for invoice in invoices:
-            if not invoice.invoice_discount:
-                continue
             lines.extend(invoice._get_discount_line(product))
         if lines:
-            Line.create([x._save_values for x in lines])
+            Line.save(lines)
         cls.update_taxes(invoices)
 
     def _get_discount_line(self, product):
         Line = Pool().get('account.invoice.line')
-        amount = -1 * self.untaxed_amount * self.invoice_discount
+        amount = -1 * self.untaxed_amount * (self.invoice_discount or 0)
         lines = []
-        if amount and self.lines:
+        if amount:
             if not product:
                 self.raise_user_error('missing_discount_product',
                     self.rec_name)
@@ -99,16 +95,15 @@ class Invoice:
 
         to_delete = []
         for invoice in invoices:
-            lines = list(invoice.lines)
             for line in invoice.lines:
                 if line.product == product:
-                    lines.remove(line)
                     to_delete.append(line)
-            invoice.lines = lines
-
         Line.delete(to_delete)
-        for invoice in invoices:
-            invoice.save()
+
+    def _credit(self):
+        credit = super(Invoice, self)._credit()
+        credit.invoice_discount = self.invoice_discount
+        return credit
 
     @classmethod
     @ModelView.button
