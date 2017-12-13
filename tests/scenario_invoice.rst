@@ -152,8 +152,10 @@ Change invoice discount::
 
 Post invoice and check discount is applied::
 
-    >>> Invoice.post([invoice.id], config.context)
-    >>> invoice.reload()
+    >>> invoice.click('validate_invoice')
+    >>> invoice.state
+    u'validated'
+    >>> invoice.click('post')
     >>> invoice.state
     u'posted'
     >>> invoice.invoice_discount
@@ -217,8 +219,10 @@ Check invoice discount is parties supplier invoice discount::
 
 Post invoice and check discount is applied::
 
-    >>> Invoice.post([invoice.id], config.context)
-    >>> invoice.reload()
+    >>> invoice.click('validate_invoice')
+    >>> invoice.state
+    u'validated'
+    >>> invoice.click('post')
     >>> invoice.state
     u'posted'
     >>> invoice.invoice_discount
