@@ -48,28 +48,40 @@ class Invoice:
 
     @classmethod
     @ModelView.button
-    def compute_discount(cls, invoices):
-        pool = Pool()
-        Line = pool.get('account.invoice.line')
-        Config = Pool().get('account.configuration')
+    def compute_discount_global(cls, invoices):
+        Line = Pool().get('account.invoice.line')
 
-        product = Config(1).discount_product
-        cls.remove_discount(invoices)
         lines = []
         for invoice in invoices:
-            lines.extend(invoice._get_discount_line(product))
+            if not invoice.invoice_discount:
+                continue
+            discount_line = invoice._get_discount_global_line()
+            if discount_line:
+                lines.append(discount_line)
+
         if lines:
-            Line.save(lines)
+            Line.create([x._save_values for x in lines])
         cls.update_taxes(invoices)
 
-    def _get_discount_line(self, product):
-        Line = Pool().get('account.invoice.line')
-        amount = -1 * self.untaxed_amount * (self.invoice_discount or 0)
-        lines = []
+    def _get_discount_global_line(self):
+        pool = Pool()
+        Config = pool.get('account.configuration')
+        Line = pool.get('account.invoice.line')
+
+        config = Config(1)
+        product = config.discount_product
+        if not product:
+            self.raise_user_error('missing_discount_product',
+                self.rec_name)
+
+        # check invoice has a global discount line; not create a new line
+        for line in self.lines:
+            if (line.type == 'line' and line.product
+                    and line.product.id == product.id):
+                return
+
+        amount = -1 * self.untaxed_amount * self.invoice_discount
         if amount:
-            if not product:
-                self.raise_user_error('missing_discount_product',
-                    self.rec_name)
             line = Line()
             line.invoice = self
             line.type = 'line'
@@ -82,23 +94,33 @@ class Invoice:
             line.quantity = 1
             line.unit = product.default_uom
             line.unit_price = amount
+            line.sequence = 9999
             line._update_taxes(self.type, self.party)
-            lines.append(line)
-        return lines
+            return line
 
     @classmethod
-    def remove_discount(cls, invoices):
+    def remove_discount_global(cls, invoices):
         pool = Pool()
         Line = pool.get('account.invoice.line')
         Config = pool.get('account.configuration')
-        product = Config(1).discount_product
+
+        config = Config(1)
+        product = config.discount_product
 
         to_delete = []
+        to_update_taxes = []
         for invoice in invoices:
             for line in invoice.lines:
-                if line.product == product:
+                if (line.type == 'line' and line.product
+                        and line.product.id == product.id):
                     to_delete.append(line)
-        Line.delete(to_delete)
+                    to_update_taxes.append(invoice)
+                    break
+
+        if to_delete:
+            Line.delete(to_delete)
+        if to_update_taxes:
+            cls.update_taxes(to_update_taxes)
 
     def _credit(self):
         credit = super(Invoice, self)._credit()
@@ -109,14 +131,14 @@ class Invoice:
     @ModelView.button
     @Workflow.transition('validated')
     def validate_invoice(cls, invoices):
-        cls.compute_discount(invoices)
+        cls.compute_discount_global(invoices)
         super(Invoice, cls).validate_invoice(invoices)
 
     @classmethod
     @ModelView.button
     @Workflow.transition('posted')
     def post(cls, invoices):
-        cls.compute_discount(invoices)
+        cls.compute_discount_global(invoices)
         super(Invoice, cls).post(invoices)
 
     @classmethod
@@ -124,14 +146,14 @@ class Invoice:
     @Workflow.transition('draft')
     def draft(cls, invoices):
         super(Invoice, cls).draft(invoices)
-        cls.remove_discount(invoices)
+        cls.remove_discount_global(invoices)
 
     @classmethod
     @ModelView.button
     @Workflow.transition('cancel')
     def cancel(cls, invoices):
         super(Invoice, cls).cancel(invoices)
-        cls.remove_discount(invoices)
+        cls.remove_discount_global(invoices)
 
 
 class InvoiceLine:

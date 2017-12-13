@@ -141,6 +141,9 @@ Change invoice discount::
 
 Post invoice and check discount is applied::
 
+    >>> invoice.click('validate_invoice')
+    >>> invoice.state
+    u'validated'
     >>> invoice.click('post')
     >>> invoice.state
     u'posted'
@@ -203,6 +206,9 @@ Check invoice discount is parties supplier invoice discount::
 
 Post invoice and check discount is applied::
 
+    >>> invoice.click('validate_invoice')
+    >>> invoice.state
+    u'validated'
     >>> invoice.click('post')
     >>> invoice.state
     u'posted'
