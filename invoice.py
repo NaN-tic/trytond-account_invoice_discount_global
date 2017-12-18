@@ -106,6 +106,8 @@ class Invoice:
 
         config = Config(1)
         product = config.discount_product
+        if not product:
+            return
 
         to_delete = []
         to_update_taxes = []
