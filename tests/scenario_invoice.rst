@@ -187,7 +187,7 @@ Credit invoice with refund::
 
 Duplicate invoice::
 
-    >>> duplicate = invoice.duplicate()
+    >>> duplicate, = invoice.duplicate()
     >>> Invoice.post([duplicate.id], config.context)
     >>> duplicate.reload()
     >>> duplicate.untaxed_amount
