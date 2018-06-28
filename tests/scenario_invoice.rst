@@ -11,7 +11,7 @@ Imports::
     >>> from trytond.modules.company.tests.tools import create_company, \
     ...     get_company
     >>> from trytond.modules.account.tests.tools import create_fiscalyear, \
-    ...     create_chart, get_accounts, create_tax, set_tax_code
+    ...     create_chart, get_accounts, create_tax
     >>> from trytond.modules.account_invoice.tests.tools import \
     ...     set_fiscalyear_invoice_sequences, create_payment_term
     >>> today = datetime.date.today()
@@ -46,13 +46,9 @@ Create chart of accounts::
 Create tax::
 
     >>> Tax = Model.get('account.tax')
-    >>> tax = set_tax_code(create_tax(Decimal('.10')))
+    >>> tax = create_tax(Decimal('.10'))
     >>> tax.save()
-    >>> invoice_base_code = tax.invoice_base_code
-    >>> invoice_tax_code = tax.invoice_tax_code
-    >>> credit_note_base_code = tax.credit_note_base_code
-    >>> credit_note_tax_code = tax.credit_note_tax_code
-
+    
 Create party with customer invoice discount of 5% and supplier discount of 3%::
 
     >>> Party = Model.get('party.party')
