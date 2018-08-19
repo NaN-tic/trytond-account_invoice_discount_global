@@ -51,7 +51,7 @@ Create tax::
     >>> Tax = Model.get('account.tax')
     >>> tax = create_tax(Decimal('.10'))
     >>> tax.save()
-    
+
 Create parties::
 
     >>> Party = Model.get('party.party')
@@ -61,6 +61,17 @@ Create parties::
     >>> customer = Party(name='Customer')
     >>> customer.customer_invoice_discount = Decimal('0.05')
     >>> customer.save()
+
+Create account category::
+
+    >>> ProductCategory = Model.get('product.category')
+    >>> account_category = ProductCategory(name="Account Category")
+    >>> account_category.accounting = True
+    >>> account_category.account_expense = expense
+    >>> account_category.account_revenue = revenue
+    >>> account_category.customer_taxes.append(tax)
+    >>> account_category.supplier_taxes.append(Tax(tax.id))
+    >>> account_category.save()
 
 Create product::
 
@@ -74,10 +85,7 @@ Create product::
     >>> template.purchasable = True
     >>> template.salable = True
     >>> template.list_price = Decimal('40')
-    >>> template.account_expense = expense
-    >>> template.account_revenue = revenue
-    >>> template.customer_taxes.append(tax)
-    >>> template.supplier_taxes.append(Tax(tax.id))
+    >>> template.account_category = account_category
     >>> template.save()
     >>> product, = template.products
     >>> product.cost_price = Decimal('25')
@@ -90,8 +98,7 @@ Create discount product::
     >>> template.default_uom = unit
     >>> template.type = 'service'
     >>> template.list_price = Decimal('0')
-    >>> template.account_expense = expense
-    >>> template.account_revenue = revenue
+    >>> template.account_category = account_category
     >>> template.save()
     >>> discount_product, = template.products
 
@@ -157,9 +164,9 @@ Post invoice and check discount is applied::
     >>> invoice.untaxed_amount
     Decimal('190.00')
     >>> invoice.tax_amount
-    Decimal('20.00')
+    Decimal('19.00')
     >>> invoice.total_amount
-    Decimal('210.00')
+    Decimal('209.00')
 
 Purchase 3 services::
 
@@ -210,6 +217,6 @@ Post invoice and check discount is applied::
     >>> invoice.untaxed_amount
     Decimal('72.75')
     >>> invoice.tax_amount
-    Decimal('7.50')
+    Decimal('7.28')
     >>> invoice.total_amount
-    Decimal('80.25')
+    Decimal('80.03')
