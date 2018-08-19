@@ -12,15 +12,13 @@ __all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale', 'Purchase']
 DISCOUNT_DIGITS = (16, config.getint('product', 'price_decimal', default=4))
 
 
-class Configuration:
+class Configuration(metaclass=PoolMeta):
     __name__ = 'account.configuration'
-    __metaclass__ = PoolMeta
     discount_product = fields.Many2One('product.product', 'Discount Product')
 
 
-class Invoice:
+class Invoice(metaclass=PoolMeta):
     __name__ = 'account.invoice'
-    __metaclass__ = PoolMeta
     invoice_discount = fields.Numeric('Invoice Discount',
         digits=DISCOUNT_DIGITS, states={
             'readonly': Eval('state') != 'draft',
@@ -158,9 +156,8 @@ class Invoice:
         cls.remove_discount_global(invoices)
 
 
-class InvoiceLine:
+class InvoiceLine(metaclass=PoolMeta):
     __name__ = 'account.invoice.line'
-    __metaclass__ = PoolMeta
 
     def _update_taxes(self, invoice_type, party):
         Tax = Pool().get('account.tax')
@@ -194,9 +191,8 @@ class InvoiceLine:
             self.taxes = Tax.browse(taxes)
 
 
-class Sale:
+class Sale(metaclass=PoolMeta):
     __name__ = 'sale.sale'
-    __metaclass__ = PoolMeta
 
     def _get_invoice_sale(self):
         invoice = super(Sale, self)._get_invoice_sale()
@@ -206,9 +202,8 @@ class Sale:
         return invoice
 
 
-class Purchase:
+class Purchase(metaclass=PoolMeta):
     __name__ = 'purchase.purchase'
-    __metaclass__ = PoolMeta
 
     def _get_invoice_purchase(self):
         invoice = super(Purchase, self)._get_invoice_purchase()

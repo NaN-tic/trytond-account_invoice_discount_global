@@ -131,7 +131,7 @@ Sale 5 services::
     >>> Sale.confirm([sale.id], config.context)
     >>> Sale.process([sale.id], config.context)
     >>> sale.state
-    u'processing'
+    'processing'
     >>> sale.reload()
     >>> sale.untaxed_amount
     Decimal('200.00')
@@ -183,7 +183,7 @@ Purchase 3 services::
     >>> purchase.click('confirm')
     >>> purchase.click('process')
     >>> purchase.state
-    u'processing'
+    'processing'
     >>> purchase.reload()
     >>> purchase.untaxed_amount
     Decimal('75.00')

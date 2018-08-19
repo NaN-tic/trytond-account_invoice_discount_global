@@ -10,9 +10,8 @@ __all__ = ['Party', 'PartyAccount']
 DISCOUNT_DIGITS = (16, config.getint('product', 'price_decimal', default=4))
 
 
-class Party:
+class Party(metaclass=PoolMeta):
     __name__ = 'party.party'
-    __metaclass__ = PoolMeta
     customer_invoice_discount = fields.MultiValue(fields.Numeric(
             'Customer Invoice Discount', digits=DISCOUNT_DIGITS,
             states={
@@ -32,9 +31,8 @@ class Party:
         return super(Party, cls).multivalue_model(field)
 
 
-class PartyAccount:
+class PartyAccount(metaclass=PoolMeta):
     __name__ = 'party.party.account'
-    __metaclass__ = PoolMeta
 
     customer_invoice_discount = fields.Numeric(
         "Customer Invoice Discount", digits=DISCOUNT_DIGITS)

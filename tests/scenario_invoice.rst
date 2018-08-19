@@ -146,10 +146,10 @@ Post invoice and check discount is applied::
 
     >>> invoice.click('validate_invoice')
     >>> invoice.state
-    u'validated'
+    'validated'
     >>> invoice.click('post')
     >>> invoice.state
-    u'posted'
+    'posted'
     >>> invoice.invoice_discount
     Decimal('0.1')
     >>> discount_line, = [l for l in invoice.lines
@@ -171,7 +171,7 @@ Credit invoice with refund::
     >>> credit.form.with_refund = True
     >>> credit.execute('credit')
     >>> invoice.state
-    u'paid'
+    'paid'
     >>> credit_note, = Invoice.find([('untaxed_amount', '<', Decimal(0))])
     >>> credit_note.untaxed_amount
     Decimal('-198.00')
@@ -211,10 +211,10 @@ Post invoice and check discount is applied::
 
     >>> invoice.click('validate_invoice')
     >>> invoice.state
-    u'validated'
+    'validated'
     >>> invoice.click('post')
     >>> invoice.state
-    u'posted'
+    'posted'
     >>> invoice.invoice_discount
     Decimal('0.03')
     >>> discount_line, = [l for l in invoice.lines
