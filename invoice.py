@@ -6,6 +6,8 @@ from trytond.config import config
 from trytond.model import ModelView, Workflow, fields
 from trytond.pool import PoolMeta, Pool
 from trytond.pyson import Eval
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 
 __all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale', 'Purchase']
 
@@ -23,14 +25,6 @@ class Invoice(metaclass=PoolMeta):
         digits=DISCOUNT_DIGITS, states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state'])
-
-    @classmethod
-    def __setup__(cls):
-        super(Invoice, cls).__setup__()
-        cls._error_messages.update({
-                'missing_discount_product': ('Invoice "%s" has a discount but '
-                    'no discount product is configured.'),
-                })
 
     @staticmethod
     def default_invoice_discount():
@@ -69,8 +63,10 @@ class Invoice(metaclass=PoolMeta):
         config = Config(1)
         product = config.discount_product
         if not product:
-            self.raise_user_error('missing_discount_product',
-                self.rec_name)
+            raise UserError(
+                gettext('account_invoice_discount_global.missing_discount_product',
+                name=self.rec_name,
+                ))
 
         # check invoice has a global discount line; not create a new line
         for line in self.lines:
@@ -110,6 +106,8 @@ class Invoice(metaclass=PoolMeta):
         to_delete = []
         to_update_taxes = []
         for invoice in invoices:
+            if invoice.state in ('cancel', 'posted', 'paid'):
+                continue
             for line in invoice.lines:
                 if (line.type == 'line' and line.product
                         and line.product.id == product.id):

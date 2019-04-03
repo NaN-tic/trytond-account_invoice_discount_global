@@ -171,7 +171,7 @@ Credit invoice with refund::
     >>> credit.form.with_refund = True
     >>> credit.execute('credit')
     >>> invoice.state
-    'paid'
+    'cancel'
     >>> credit_note, = Invoice.find([('untaxed_amount', '<', Decimal(0))])
     >>> credit_note.untaxed_amount
     Decimal('-198.00')
