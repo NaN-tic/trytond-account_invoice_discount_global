@@ -29,6 +29,7 @@ class Party(metaclass=PoolMeta):
 
     @classmethod
     def __register__(cls, module_name):
+        Property = Pool().get('ir.property')
         TableHandler = backend.get('TableHandler')
 
         super(Party, cls).__register__(module_name)
