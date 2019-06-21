@@ -63,8 +63,8 @@ class Invoice(metaclass=PoolMeta):
         config = Config(1)
         product = config.discount_product
         if not product:
-            raise UserError(
-                gettext('account_invoice_discount_global.missing_discount_product',
+            raise UserError(gettext(
+                'account_invoice_discount_global.msg_missing_discount_product',
                 name=self.rec_name,
                 ))
 
