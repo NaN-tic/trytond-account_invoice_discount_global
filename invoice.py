@@ -120,8 +120,8 @@ class Invoice(metaclass=PoolMeta):
         if to_update_taxes:
             cls.update_taxes(to_update_taxes)
 
-    def _credit(self):
-        credit = super(Invoice, self)._credit()
+    def _credit(self, **values):
+        credit = super(Invoice, self)._credit(**values)
         credit.invoice_discount = self.invoice_discount
         return credit
 
