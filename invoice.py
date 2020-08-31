@@ -106,7 +106,7 @@ class Invoice(metaclass=PoolMeta):
         to_delete = []
         to_update_taxes = []
         for invoice in invoices:
-            if invoice.state in ('cancel', 'posted', 'paid'):
+            if invoice.state in ('cancelled', 'posted', 'paid'):
                 continue
             for line in invoice.lines:
                 if (line.type == 'line' and line.product
@@ -148,7 +148,7 @@ class Invoice(metaclass=PoolMeta):
 
     @classmethod
     @ModelView.button
-    @Workflow.transition('cancel')
+    @Workflow.transition('cancelled')
     def cancel(cls, invoices):
         super(Invoice, cls).cancel(invoices)
         cls.remove_discount_global(invoices)
