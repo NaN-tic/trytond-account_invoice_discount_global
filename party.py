@@ -4,10 +4,6 @@ from trytond.config import config
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
-from trytond.transaction import Transaction
-from sql import Null
-from trytond import backend
-
 
 __all__ = ['Party', 'PartyAccount']
 
