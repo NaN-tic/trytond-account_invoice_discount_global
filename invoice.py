@@ -87,7 +87,8 @@ class Invoice(metaclass=PoolMeta):
             line.description = product.rec_name
             line.quantity = 1
             line.unit = product.default_uom
-            line.unit_price = amount
+            line.unit_price = amount.quantize(
+                Decimal(str(10 ** -Line.unit_price.digits[1])))
             line.sequence = 9999
             line._update_taxes(self.type, self.party)
             return line
