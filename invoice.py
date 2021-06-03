@@ -44,16 +44,18 @@ class Invoice(metaclass=PoolMeta):
         Line = Pool().get('account.invoice.line')
 
         lines = []
+        to_update = []
         for invoice in invoices:
             if not invoice.invoice_discount:
                 continue
             discount_line = invoice._get_discount_global_line()
             if discount_line:
                 lines.append(discount_line)
+                to_update.append(invoice)
 
         if lines:
             Line.create([x._save_values for x in lines])
-        cls.update_taxes(invoices)
+        cls.update_taxes(to_update)
 
     def _get_discount_global_line(self):
         pool = Pool()
