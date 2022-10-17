@@ -1,17 +1,14 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 from decimal import Decimal
-
-from trytond.config import config
 from trytond.model import ModelView, Workflow, fields
 from trytond.pool import PoolMeta, Pool
 from trytond.pyson import Eval
 from trytond.i18n import gettext
 from trytond.exceptions import UserError
+from trytond.modules.product import price_digits, round_price
 
 __all__ = ['Configuration', 'Invoice', 'InvoiceLine', 'Sale', 'Purchase']
-
-DISCOUNT_DIGITS = (16, config.getint('product', 'price_decimal', default=4))
 
 
 class Configuration(metaclass=PoolMeta):
@@ -22,7 +19,7 @@ class Configuration(metaclass=PoolMeta):
 class Invoice(metaclass=PoolMeta):
     __name__ = 'account.invoice'
     invoice_discount = fields.Numeric('Invoice Discount',
-        digits=DISCOUNT_DIGITS, states={
+        digits=price_digits, states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state'])
 
@@ -89,8 +86,7 @@ class Invoice(metaclass=PoolMeta):
             line.description = product.rec_name
             line.quantity = 1
             line.unit = product.default_uom
-            line.unit_price = amount.quantize(
-                Decimal(str(10 ** -Line.unit_price.digits[1])))
+            line.unit_price = round_price(amount)
             line.sequence = 9999
             line._update_taxes(self.type, self.party)
             return line
