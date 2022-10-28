@@ -14,7 +14,6 @@ Imports::
     ...     create_chart, get_accounts, create_tax
     >>> from trytond.modules.account_invoice.tests.tools import \
     ...     set_fiscalyear_invoice_sequences, create_payment_term
-    >>> today = datetime.date.today()
 
 Install account_invoice_discount_global::
 
@@ -108,6 +107,7 @@ Create payment term::
 
 Create customer invoice::
 
+    >>> today = datetime.date.today()
     >>> Invoice = Model.get('account.invoice')
     >>> invoice = Invoice()
     >>> invoice.party = party
