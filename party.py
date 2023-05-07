@@ -39,12 +39,3 @@ class PartyAccount(metaclass=PoolMeta):
         "Customer Invoice Discount", digits=DISCOUNT_DIGITS)
     supplier_invoice_discount = fields.Numeric(
         "Supplier Invoice Discount", digits=DISCOUNT_DIGITS)
-
-    @classmethod
-    def _migrate_property(cls, field_names, value_names, fields):
-        field_names += ['customer_invoice_discount',
-            'supplier_invoice_discount']
-        value_names += ['customer_invoice_discount',
-            'supplier_invoice_discount']
-        super(PartyAccount, cls)._migrate_property(field_names, value_names,
-            fields)
