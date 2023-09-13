@@ -178,6 +178,7 @@ Purchase 3 services::
     >>> purchase_line = purchase.lines.new()
     >>> purchase_line.product = product
     >>> purchase_line.quantity = 3.0
+    >>> purchase_line.unit_price = product.cost_price
     >>> purchase.click('quote')
     >>> purchase.click('confirm')
     >>> purchase.click('process')
