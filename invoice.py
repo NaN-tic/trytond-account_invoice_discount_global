@@ -21,7 +21,7 @@ class Invoice(metaclass=PoolMeta):
     invoice_discount = fields.Numeric('Invoice Discount',
         digits=price_digits, states={
             'readonly': Eval('state') != 'draft',
-            }, depends=['state'])
+            })
 
     @staticmethod
     def default_invoice_discount():
