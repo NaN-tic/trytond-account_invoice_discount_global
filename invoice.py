@@ -51,7 +51,7 @@ class Invoice(metaclass=PoolMeta):
                 to_update.append(invoice)
 
         if lines:
-            Line.create([x._save_values for x in lines])
+            Line.create([x._save_values() for x in lines])
         cls.update_taxes(to_update)
 
     def _get_discount_global_line(self):
