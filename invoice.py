@@ -202,8 +202,8 @@ class Sale(metaclass=PoolMeta):
 class Purchase(metaclass=PoolMeta):
     __name__ = 'purchase.purchase'
 
-    def _get_invoice_purchase(self):
-        invoice = super(Purchase, self)._get_invoice_purchase()
+    def _get_invoice(self):
+        invoice = super(Purchase, self)._get_invoice()
         if invoice:
             invoice.invoice_discount = (
                 invoice.on_change_with_invoice_discount())
