@@ -102,7 +102,7 @@ class Test(unittest.TestCase):
         # Create customer invoice
         today = datetime.date.today()
         Invoice = Model.get('account.invoice')
-        invoice = Invoice()
+        invoice = Invoice(type='out')
         invoice.party = party
         invoice.payment_term = payment_term
         invoice.invoice_date = today
