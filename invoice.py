@@ -109,7 +109,8 @@ class Invoice(metaclass=PoolMeta):
                 continue
             for line in invoice.lines:
                 if (line.type == 'line' and line.product
-                        and line.product.id == product.id):
+                        and line.product.id == product.id
+                        and not line.origin):
                     to_delete.append(line)
                     to_update_taxes.append(invoice)
                     break

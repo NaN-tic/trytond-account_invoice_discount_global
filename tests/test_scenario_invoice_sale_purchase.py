@@ -90,6 +90,7 @@ class Test(unittest.TestCase):
         template.name = 'product'
         template.default_uom = unit
         template.type = 'service'
+        template.salable = True
         template.list_price = Decimal('0')
         template.account_category = account_category
         template.save()
@@ -148,6 +149,54 @@ class Test(unittest.TestCase):
         self.assertEqual(invoice.untaxed_amount, Decimal('190.00'))
         self.assertEqual(invoice.tax_amount, Decimal('19.00'))
         self.assertEqual(invoice.total_amount, Decimal('209.00'))
+
+        # Sale with a regular line using the configured discount product
+        sale = Sale()
+        sale.party = customer
+        sale.payment_term = payment_term
+        sale.invoice_method = 'order'
+        sale_line = SaleLine()
+        sale.lines.append(sale_line)
+        sale_line.product = product
+        sale_line.quantity = 1.0
+        sale_line = SaleLine()
+        sale.lines.append(sale_line)
+        sale_line.product = discount_product
+        sale_line.quantity = 1.0
+        sale_line.unit_price = Decimal('15.00')
+        sale.save()
+        Sale.quote([sale.id], config.context)
+        Sale.confirm([sale.id], config.context)
+        Sale.process([sale.id], config.context)
+        self.assertEqual(sale.state, 'processing')
+        self.assertEqual(len(sale.invoices), 1)
+        invoice, = sale.invoices
+        self.assertEqual(len(invoice.lines), 2)
+        sale_discount_lines = [
+            l for l in invoice.lines if l.product == discount_product
+        ]
+        self.assertEqual(len(sale_discount_lines), 1)
+        self.assertTrue(sale_discount_lines[0].origin)
+
+        Invoice.validate_invoice([invoice.id], config.context)
+        invoice.reload()
+        self.assertEqual(invoice.state, 'validated')
+        self.assertEqual(len(invoice.lines), 2)
+        sale_discount_lines = [
+            l for l in invoice.lines if l.product == discount_product
+        ]
+        self.assertEqual(len(sale_discount_lines), 1)
+        self.assertTrue(sale_discount_lines[0].origin)
+
+        invoice.click('draft')
+        invoice.reload()
+        self.assertEqual(invoice.state, 'draft')
+        self.assertEqual(len(invoice.lines), 2)
+        sale_discount_lines = [
+            l for l in invoice.lines if l.product == discount_product
+        ]
+        self.assertEqual(len(sale_discount_lines), 1)
+        self.assertTrue(sale_discount_lines[0].origin)
 
         # Purchase 3 services
         Purchase = Model.get('purchase.purchase')
