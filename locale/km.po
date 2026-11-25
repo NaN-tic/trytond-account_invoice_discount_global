@@ -1,0 +1,51 @@
+#
+msgid ""
+msgstr ""
+"Language: km\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "field:account.configuration,discount_product:"
+msgid "Discount Product"
+msgstr "ផលិតផលសម្រាប់ការបញ្ចុះតម្លៃ"
+
+msgctxt "field:account.invoice,invoice_discount:"
+msgid "Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រ"
+
+msgctxt "field:party.party,customer_invoice_discount:"
+msgid "Customer Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រអតិថិជន"
+
+msgctxt "field:party.party,supplier_invoice_discount:"
+msgid "Supplier Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រអ្នកផ្គត់ផ្គង់"
+
+#, python-format
+msgctxt "model:ir.message,text:msg_missing_discount_product"
+msgid "Invoice \"%(name)s\" has a discount but no discount product is configured."
+msgstr ""
+"វិក្កយបត្រ «%(name)s» មានការបញ្ចុះតម្លៃ "
+"ប៉ុន្តែមិនទាន់កំណត់ផលិតផលសម្រាប់ការបញ្ចុះតម្លៃទេ។"
+
+msgctxt "view:account.invoice:"
+msgid "%"
+msgstr "%"
+
+msgctxt "view:party.party:"
+msgid "%"
+msgstr "%"
+
+msgctxt "view:party.party:"
+msgid "Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រ"
+
+msgctxt "field:party.party.account,customer_invoice_discount:"
+msgid "Customer Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រអតិថិជន"
+
+msgctxt "field:party.party.account,supplier_invoice_discount:"
+msgid "Supplier Invoice Discount"
+msgstr "ការបញ្ចុះតម្លៃលើវិក្កយបត្រអ្នកផ្គត់ផ្គង់"
